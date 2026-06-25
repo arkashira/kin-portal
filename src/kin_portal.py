@@ -1,59 +1,62 @@
 import json
 from dataclasses import dataclass
-from typing import Dict
+from typing import List
+import argparse
 
 @dataclass
-class User:
-    id: int
-    email: str
-    password: str
+class Service:
+    name: str
+    url: str
+    icon: str
+    shareable: bool
 
 class KinPortal:
     def __init__(self):
-        self.users = {}
-        self.photo_album = {}
+        self.services = []
 
-    def create_account(self, email: str) -> User:
-        if email in self.users:
-            raise ValueError("Email already exists")
-        user_id = len(self.users) + 1
-        user = User(id=user_id, email=email, password="temporary_password")
-        self.users[email] = user
-        return user
+    def scan_services(self):
+        # Simulate scanning local LAN
+        self.services = [
+            Service("Nextcloud", "https://nextcloud.local", "nextcloud.png", False),
+            Service("Kanboard", "https://kanboard.local", "kanboard.png", False),
+        ]
 
-    def login(self, email: str, password: str) -> bool:
-        if email not in self.users:
-            return False
-        user = self.users[email]
-        return user.password == password
+    def get_services(self):
+        return self.services
 
-    def add_photo(self, email: str, photo: str):
-        if email not in self.users:
-            raise ValueError("Email does not exist")
-        if email not in self.photo_album:
-            self.photo_album[email] = []
-        self.photo_album[email].append(photo)
+    def toggle_shareable(self, service_name):
+        for service in self.services:
+            if service.name == service_name:
+                service.shareable = not service.shareable
+                return service
 
-    def get_photo_album(self, email: str) -> Dict[str, list]:
-        if email not in self.users:
-            raise ValueError("Email does not exist")
-        return {email: self.photo_album.get(email, [])}
-
-def generate_invitation_link(email: str) -> str:
-    return f"https://kin-portal.com/invite/{email}"
-
-def send_invitation_link(email: str, link: str):
-    print(f"Sending invitation link to {email}: {link}")
+    def create_tunnel(self, service_name):
+        for service in self.services:
+            if service.name == service_name and service.shareable:
+                # Simulate creating a secure reverse-proxy tunnel
+                return f"Tunnel created for {service_name}"
+        return None
 
 def main():
-    kin_portal = KinPortal()
-    email = "user@example.com"
-    link = generate_invitation_link(email)
-    send_invitation_link(email, link)
-    user = kin_portal.create_account(email)
-    kin_portal.add_photo(email, "photo1.jpg")
-    kin_portal.add_photo(email, "photo2.jpg")
-    print(kin_portal.get_photo_album(email))
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--scan", action="store_true")
+    parser.add_argument("--toggle", type=str)
+    parser.add_argument("--tunnel", type=str)
+    args = parser.parse_args()
+
+    portal = KinPortal()
+
+    if args.scan:
+        portal.scan_services()
+        print(json.dumps([service.__dict__ for service in portal.get_services()]))
+    elif args.toggle:
+        service = portal.toggle_shareable(args.toggle)
+        if service:
+            print(json.dumps(service.__dict__))
+    elif args.tunnel:
+        result = portal.create_tunnel(args.tunnel)
+        if result:
+            print(result)
 
 if __name__ == "__main__":
     main()

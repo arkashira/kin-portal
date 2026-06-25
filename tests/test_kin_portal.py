@@ -1,75 +1,52 @@
-from kin_portal import KinPortal, User, generate_invitation_link, send_invitation_link
+from kin_portal import KinPortal, Service
+import pytest
 
-def test_create_account():
-    kin_portal = KinPortal()
-    email = "user@example.com"
-    user = kin_portal.create_account(email)
-    assert user.id == 1
-    assert user.email == email
-    assert user.password == "temporary_password"
+def test_scan_services():
+    portal = KinPortal()
+    portal.scan_services()
+    services = portal.get_services()
+    assert len(services) == 2
+    assert services[0].name == "Nextcloud"
+    assert services[1].name == "Kanboard"
 
-def test_login():
-    kin_portal = KinPortal()
-    email = "user@example.com"
-    kin_portal.create_account(email)
-    assert kin_portal.login(email, "temporary_password") == True
-    assert kin_portal.login(email, "wrong_password") == False
+def test_get_services():
+    portal = KinPortal()
+    services = portal.get_services()
+    assert services == []
 
-def test_add_photo():
-    kin_portal = KinPortal()
-    email = "user@example.com"
-    kin_portal.create_account(email)
-    kin_portal.add_photo(email, "photo1.jpg")
-    assert kin_portal.get_photo_album(email) == {email: ["photo1.jpg"]}
+def test_toggle_shareable():
+    portal = KinPortal()
+    portal.scan_services()
+    service = portal.toggle_shareable("Nextcloud")
+    assert service.shareable
 
-def test_get_photo_album():
-    kin_portal = KinPortal()
-    email = "user@example.com"
-    kin_portal.create_account(email)
-    kin_portal.add_photo(email, "photo1.jpg")
-    kin_portal.add_photo(email, "photo2.jpg")
-    assert kin_portal.get_photo_album(email) == {email: ["photo1.jpg", "photo2.jpg"]}
+def test_create_tunnel():
+    portal = KinPortal()
+    portal.scan_services()
+    portal.toggle_shareable("Nextcloud")
+    result = portal.create_tunnel("Nextcloud")
+    assert result == "Tunnel created for Nextcloud"
 
-def test_generate_invitation_link():
-    email = "user@example.com"
-    link = generate_invitation_link(email)
-    assert link == f"https://kin-portal.com/invite/{email}"
+def test_create_tunnel_unshareable():
+    portal = KinPortal()
+    portal.scan_services()
+    result = portal.create_tunnel("Nextcloud")
+    assert result is None
 
-def test_send_invitation_link():
-    email = "user@example.com"
-    link = generate_invitation_link(email)
-    send_invitation_link(email, link)
-    # No assertion, just testing that it runs without error
+def test_main_scan():
+    import sys
+    sys.argv = ["kin_portal.py", "--scan"]
+    from kin_portal import main
+    main()
 
-def test_create_account_duplicate_email():
-    kin_portal = KinPortal()
-    email = "user@example.com"
-    kin_portal.create_account(email)
-    try:
-        kin_portal.create_account(email)
-        assert False, "Expected ValueError to be raised"
-    except ValueError as e:
-        assert str(e) == "Email already exists"
+def test_main_toggle():
+    import sys
+    sys.argv = ["kin_portal.py", "--toggle", "Nextcloud"]
+    from kin_portal import main
+    main()
 
-def test_login_non_existent_email():
-    kin_portal = KinPortal()
-    email = "user@example.com"
-    assert kin_portal.login(email, "password") == False
-
-def test_add_photo_non_existent_email():
-    kin_portal = KinPortal()
-    email = "user@example.com"
-    try:
-        kin_portal.add_photo(email, "photo1.jpg")
-        assert False, "Expected ValueError to be raised"
-    except ValueError as e:
-        assert str(e) == "Email does not exist"
-
-def test_get_photo_album_non_existent_email():
-    kin_portal = KinPortal()
-    email = "user@example.com"
-    try:
-        kin_portal.get_photo_album(email)
-        assert False, "Expected ValueError to be raised"
-    except ValueError as e:
-        assert str(e) == "Email does not exist"
+def test_main_tunnel():
+    import sys
+    sys.argv = ["kin_portal.py", "--tunnel", "Nextcloud"]
+    from kin_portal import main
+    main()

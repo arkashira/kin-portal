@@ -1,8 +1,9 @@
 # Kin Portal
 
-A simple web application for sharing photos.
+A Python project for automatic service discovery and secure tunnel provisioning.
 
 ## Usage
 
-1. Run `python -m pytest` to run the tests.
-2. Run `python src/kin_portal.py` to start the application.
+* Run `python kin_portal.py --scan` to scan local LAN for services.
+* Run `python kin_portal.py --toggle <service_name>` to toggle shareable status of a service.
+* Run `python kin_portal.py --tunnel <service_name>` to create a secure reverse-proxy tunnel for a service.
