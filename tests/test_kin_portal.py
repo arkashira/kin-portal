@@ -1,52 +1,39 @@
-from kin_portal import KinPortal, Service
-import pytest
+from kin_portal import KinPortal, FamilyMember, SharedContent
 
-def test_scan_services():
+def test_add_family_member():
     portal = KinPortal()
-    portal.scan_services()
-    services = portal.get_services()
-    assert len(services) == 2
-    assert services[0].name == "Nextcloud"
-    assert services[1].name == "Kanboard"
+    portal.add_family_member("Jane Doe", 25)
+    assert len(portal.get_family_members()) == 1
+    assert portal.get_family_members()[0].name == "Jane Doe"
+    assert portal.get_family_members()[0].age == 25
 
-def test_get_services():
+def test_add_shared_content():
     portal = KinPortal()
-    services = portal.get_services()
-    assert services == []
+    portal.add_shared_content("Family Videos", "A collection of family videos")
+    assert len(portal.get_shared_content()) == 1
+    assert portal.get_shared_content()[0].title == "Family Videos"
+    assert portal.get_shared_content()[0].description == "A collection of family videos"
 
-def test_toggle_shareable():
+def test_get_instructions():
     portal = KinPortal()
-    portal.scan_services()
-    service = portal.toggle_shareable("Nextcloud")
-    assert service.shareable
+    assert portal.get_instructions() == "Welcome to the Kin Portal! To access shared content, please navigate to the 'Shared Content' section."
 
-def test_create_tunnel():
+def test_get_feedback_added_family_member():
     portal = KinPortal()
-    portal.scan_services()
-    portal.toggle_shareable("Nextcloud")
-    result = portal.create_tunnel("Nextcloud")
-    assert result == "Tunnel created for Nextcloud"
+    assert portal.get_feedback("added_family_member") == "Family member added successfully!"
 
-def test_create_tunnel_unshareable():
+def test_get_feedback_added_shared_content():
     portal = KinPortal()
-    portal.scan_services()
-    result = portal.create_tunnel("Nextcloud")
-    assert result is None
+    assert portal.get_feedback("added_shared_content") == "Shared content added successfully!"
 
-def test_main_scan():
-    import sys
-    sys.argv = ["kin_portal.py", "--scan"]
-    from kin_portal import main
-    main()
+def test_get_feedback_invalid_action():
+    portal = KinPortal()
+    assert portal.get_feedback("invalid_action") == "Invalid action"
 
-def test_main_toggle():
-    import sys
-    sys.argv = ["kin_portal.py", "--toggle", "Nextcloud"]
-    from kin_portal import main
-    main()
+def test_get_family_members_empty():
+    portal = KinPortal()
+    assert len(portal.get_family_members()) == 0
 
-def test_main_tunnel():
-    import sys
-    sys.argv = ["kin_portal.py", "--tunnel", "Nextcloud"]
-    from kin_portal import main
-    main()
+def test_get_shared_content_empty():
+    portal = KinPortal()
+    assert len(portal.get_shared_content()) == 0

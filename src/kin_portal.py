@@ -1,62 +1,52 @@
 import json
 from dataclasses import dataclass
 from typing import List
-import argparse
 
 @dataclass
-class Service:
+class FamilyMember:
     name: str
-    url: str
-    icon: str
-    shareable: bool
+    age: int
+
+@dataclass
+class SharedContent:
+    title: str
+    description: str
 
 class KinPortal:
     def __init__(self):
-        self.services = []
+        self.family_members = []
+        self.shared_content = []
 
-    def scan_services(self):
-        # Simulate scanning local LAN
-        self.services = [
-            Service("Nextcloud", "https://nextcloud.local", "nextcloud.png", False),
-            Service("Kanboard", "https://kanboard.local", "kanboard.png", False),
-        ]
+    def add_family_member(self, name: str, age: int):
+        self.family_members.append(FamilyMember(name, age))
 
-    def get_services(self):
-        return self.services
+    def add_shared_content(self, title: str, description: str):
+        self.shared_content.append(SharedContent(title, description))
 
-    def toggle_shareable(self, service_name):
-        for service in self.services:
-            if service.name == service_name:
-                service.shareable = not service.shareable
-                return service
+    def get_family_members(self) -> List[FamilyMember]:
+        return self.family_members
 
-    def create_tunnel(self, service_name):
-        for service in self.services:
-            if service.name == service_name and service.shareable:
-                # Simulate creating a secure reverse-proxy tunnel
-                return f"Tunnel created for {service_name}"
-        return None
+    def get_shared_content(self) -> List[SharedContent]:
+        return self.shared_content
+
+    def get_instructions(self) -> str:
+        return "Welcome to the Kin Portal! To access shared content, please navigate to the 'Shared Content' section."
+
+    def get_feedback(self, action: str) -> str:
+        if action == "added_family_member":
+            return "Family member added successfully!"
+        elif action == "added_shared_content":
+            return "Shared content added successfully!"
+        else:
+            return "Invalid action"
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--scan", action="store_true")
-    parser.add_argument("--toggle", type=str)
-    parser.add_argument("--tunnel", type=str)
-    args = parser.parse_args()
-
     portal = KinPortal()
-
-    if args.scan:
-        portal.scan_services()
-        print(json.dumps([service.__dict__ for service in portal.get_services()]))
-    elif args.toggle:
-        service = portal.toggle_shareable(args.toggle)
-        if service:
-            print(json.dumps(service.__dict__))
-    elif args.tunnel:
-        result = portal.create_tunnel(args.tunnel)
-        if result:
-            print(result)
+    portal.add_family_member("John Doe", 30)
+    portal.add_shared_content("Family Photos", "A collection of family photos")
+    print(portal.get_instructions())
+    print(portal.get_feedback("added_family_member"))
+    print(portal.get_feedback("added_shared_content"))
 
 if __name__ == "__main__":
     main()
